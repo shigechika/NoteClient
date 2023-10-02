@@ -8,7 +8,7 @@ Note Client's source code is made available under the [MIT license](https://gith
 
 ## Documentation
 
-日本語のドキュメントはnote記事に飛ばす(解説記事を作成)
+=-=-=in preparation=-=-=
 
 ## Requirements
 
