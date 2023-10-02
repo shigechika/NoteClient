@@ -1,25 +1,24 @@
-冒頭の挨拶などをここに挿入
+Insert your opening greeting here
 
+## Major Heading
+### Minor Heading
 
+## How to Use Bullet Points
+Write the content for heading 1 here.
+You can also write bullet points like this.
 
-## 大見出し
+- Item 1
+- Item 2
+- Item 3
 
-### 小見出し
+## How to Use Paragraph Numbers
+You can also write paragraph numbers like this.
 
-## 箇条書きの使い方
-ここに見出し1の内容を書きます。
-このように箇条書きを書くこともできます。
-- 項目1
-- 項目2
-- 項目3
+1. Paragraph 1
+2. Paragraph 2
+3. Paragraph 3
 
-## 段落番号の使い方
-段落番号の箇条書きもこのように書くことができます。
-1. 段落1
-2. 段落2
-3. 段落3
-
-## 水平線の使い方
-水平線を使うことで...
+## How to Use Horizontal Lines
+By using horizontal lines...
 ---
-このように文章の内容を線で区切ることができます。
+You can separate the content of the text like this.
