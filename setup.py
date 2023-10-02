@@ -6,7 +6,7 @@ setup(
     version=note_client.__version__,
     packages=find_packages(),
     install_requires=[
-        'selenium>=4.13.0',
+        'selenium>=4.12.0',
         'janome>=0.5.0'
     ],
     author='Nao Matsukami',
