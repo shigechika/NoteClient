@@ -19,6 +19,6 @@ You can also write paragraph numbers like this.
 3. Paragraph 3
 
 ## How to Use Horizontal Lines
-By using horizontal lines...
+By using horizontal lines
 ---
 You can separate the content of the text like this.
