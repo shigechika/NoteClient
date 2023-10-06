@@ -7,7 +7,6 @@ from selenium.webdriver.firefox.options import Options
 from janome.tokenizer import Tokenizer
 from time import sleep
 from random import randint
-import re
 
 
 class Note:
@@ -33,9 +32,8 @@ class Note:
         > post_setting : save draft or post (default : save draft)
         > headless : show or not show page (default : not show)
         '''
-        pat = re.compile(r'^.+\..txt$')
 
-        if title and pat.match(file_name) and input_tag_list and isinstance(input_tag_list, list):
+        if title and input_tag_list and isinstance(input_tag_list, list):
             options = Options()
             if headless:
                 options.headless = True
