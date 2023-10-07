@@ -7,7 +7,8 @@ from selenium.webdriver.firefox.options import Options
 from janome.tokenizer import Tokenizer
 from time import sleep
 from random import randint
-
+import builtins
+import re
 
 class Note:
 
@@ -20,20 +21,21 @@ class Note:
         self.user_id = user_id
 
     def __str__(self):
-        return f"Email : {self.email} / User ID : {self.user_id} / Password : {self.password}"
+        return f"Email : {self.email} / User ID : {self.user_id}"
 
-    def create_article(self, title:str, file_name:str, input_tag_list:list, post_setting:bool=False, headless:bool=True):
+    def create_article(self, title:str, file_name:str, input_tag_list:list, image_index='random', post_setting:bool=False, headless:bool=True):
         '''
         Create new article
         -----
         > title : article title
         > file_name : article content file
         > tag_list : tag of article
+        > image_index : index number of the article image
         > post_setting : save draft or post (default : save draft)
         > headless : show or not show page (default : not show)
         '''
 
-        if title and input_tag_list and isinstance(input_tag_list, list):
+        if title and input_tag_list and isinstance(input_tag_list, list) and (image_index=='random' or isinstance(image_index, int)):
             options = Options()
             if headless:
                 options.headless = True
@@ -67,9 +69,6 @@ class Note:
             edit_text = text.split('\n')
 
             for i, text in enumerate(edit_text):
-                '''
-                記事処理の方法を改善
-                '''
                 pattern = re.compile(r'\d+\. ')
 
                 if '## ' in text:
@@ -175,10 +174,10 @@ class Note:
                 elif text.count('-') >= 3:
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys('---')
+                    active_element.send_keys(Keys.ENTER)
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER)
+                    active_element.send_keys('---')
 
                 elif text == '':
                     try:
@@ -214,8 +213,7 @@ class Note:
 
             t = Tokenizer()
             keywords = [token.surface for token in t.tokenize(title) if token.part_of_speech.startswith('名詞,一般') or token.part_of_speech.startswith('名詞,固有名詞') or token.part_of_speech.startswith('名詞,サ変接続')]
-            search_word = max(keywords, key=len) if keywords else None
-            # 手動でキーワードを入力
+            search_word = builtins.max(keywords, key=len) if keywords else None
 
             sleep(0.5)
             button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/main/div[1]/button")))
@@ -229,24 +227,18 @@ class Note:
             sleep(0.5)
             keyword = driver.execute_script("return document.activeElement;")
             keyword.send_keys(search_word)
-            # 検索ボタン
             sleep(2)
             button = driver.find_element(By.XPATH, "/html/body/div[5]/div/div/div[1]/div/div[2]/button")
             button.click()
-            # 画像の取得
             sleep(3)
             parent_element = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]")))
             img_elements = parent_element.find_elements(By.TAG_NAME, 'img')
-            # 画像の選択
-            # index = randint(0,len(img_elements)-1) ランダム指定
-            index = 0 #　上位指定
+            if isinstance(image_index, int) and 0 <= int(image_index)<= int(len(img_elements)-1):
+                index = image_index
+            else:
+                max = len(img_elements)-1
+                index = randint(0,max)
             img_elements[index].click()
-            # 全画像URL取得
-            # img_url_list = []
-            # for img_element in img_elements:
-            #     src_url = img_element.get_attribute('src')
-            #     img_url_list.append(str(src_url))
-            ## 画像の挿入
             button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]/div/div[2]/div/div[5]/button[2]")))
             button.click()
             sleep(2)
@@ -254,25 +246,16 @@ class Note:
             button.click()
             sleep(10)
 
-            # 投稿ボタン
             if post_setting:
                 button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[2]")))
                 button.click()
 
-                # 記事URL
                 sleep(2)
                 url = driver.current_url
                 cut_url = url.split('/')
                 post_id = cut_url[4]
                 post_url = f'https://note.com/{self.user_id}/n/{post_id}'
 
-                # おすすめのタグを取得
-                # tag_list = []
-                # for i in range(len(driver.find_elements(By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/main/section[1]/div[2]/div/div[2]/div//button"))):
-                #     button = wait.until(EC.presence_of_element_located((By.XPATH, f"/html/body/div[1]/div[3]/div[1]/div[2]/main/section[1]/div[2]/div/div[2]/div/button[{i+1}]")))
-                #     tag_list.append(str(button.text))
-
-                # タグ指定(リスト)
                 sleep(1)
                 input_element = wait.until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[3]/div[1]/div[2]/main/section[1]/div[2]/div/div[1]/input')))
                 input_element.click()
@@ -289,17 +272,31 @@ class Note:
                 button.click()
 
                 driver.quit()
+                res = {
+                    'run':'success',
+                    'title':title,
+                    'file_path':file_name,
+                    'tag_list':input_tag_list,
+                    'post_setting':'Public',
+                    'post_url':post_url
+                }
 
-                return post_url
+                return res
 
-            # 下書き保存ボタン
             else:
                 button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[1]")))
                 button.click()
 
                 driver.quit()
+                res = {
+                    'run':'success',
+                    'title':title,
+                    'file_path':file_name,
+                    'tag_list':input_tag_list,
+                    'post_setting':'Draft',
+                }
 
-                return 'success'
+                return res
             
         else:
-            return 'error'
+            return 'Required data is missing.'
