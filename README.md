@@ -4,7 +4,9 @@ Note Client can automate the posting of articles on note. The content of the art
 
 We are currently releasing a beta version. In the beta version, you can use major headings, minor headings, bullet points, paragraph numbers, and horizontal lines. With future updates, customization such as bold text and quotations as well as the insertion of tables of contents will be available.
 
-Note Client's source code is made available under the [MIT license](https://github.com/Mr-SuperInsane/NoteClient/blob/main/LICENSE).
+Note Client's source code is made available under the [MIT license](https://github.com/Mr-SuperInsane/NoteClient/blob/main/LICENSE).  
+
+[PyPI page](https://pypi.org/project/NoteClient) for this project.
 
 ## Documentation
 
@@ -17,7 +19,7 @@ Note Client's source code is made available under the [MIT license](https://gith
 ## Installation
 
 ```
-pip install note-client
+pip install NoteClient
 ```
 
 ## Quick Example
