@@ -47,7 +47,7 @@ TAG_LIST = ['sample_tag']
 # To specify the above three options, add them to the function arguments.
 
 note = Note(email=EMAIL, password=PASSWORD, user_id=USER_ID)
-print(note.create_article(title=TITLE, file_name=CONTENT_PATH, input_tag_list=TAG_LIST, image_index=INDEX))
+print(note.create_article(title=TITLE, file_name=CONTENT_PATH, input_tag_list=TAG_LIST, image_index=None))
 
 ## If successful(Public).
 # {'run':'success','title':'Sample','file_path':'content.txt','tag_list':['sample_tag'],'post_setting':'Public','post_url':'https://note.com/USER_ID/n/abc123'}
@@ -85,6 +85,28 @@ You can also write paragraph numbers like this.
 By using horizontal lines
 ---
 You can separate the content of the text like this.
+ - * _ - * _
+You can allow some horizontal pattern with " - * _ - * _ ".
+
+## How to Use Table
+- Table can make with $${\KaTeX}$$ array
+Headline of en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population
+
+$$
+\begin{array}{c:l:r}
+\# & \textbf{country} & \textbf{population} \newline\hline\hline
+1 & China & 1,411,750,000 \newline
+2 & India & 1,392,329,000 \newline
+3 & United States & 335,893,238 \newline
+4 & Indonesia & 279,118,866 \newline
+5 & Pakistan & 241,499,431 \newline\hdashline
+6 & Nigeria & 216,783,400 \newline
+7 & Brazil & 203,062,512 \newline
+8 & Bangladesh & 169,828,911 \newline
+9 & Russia & 146,424,729 \newline
+10 & Mexico & 129,406,736 \newline\hline
+\end{array}
+$$
 ```
 
 
