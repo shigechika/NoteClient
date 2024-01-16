@@ -23,7 +23,7 @@ class Note:
     def __str__(self):
         return f"Email : {self.email} / User ID : {self.user_id}"
 
-    def create_article(self, title:str, file_name:str, input_tag_list:list, image_index='random', post_setting:bool=False, headless:bool=True):
+    def create_article(self, title:str, input_tag_list:list, image_index='random', post_setting:bool=False, file_name:str=None, headless:bool=True, text:str=None):
         '''
         Create new article
         -----
@@ -35,274 +35,288 @@ class Note:
         > headless : show or not show page (default : not show)
         '''
 
-        if title and input_tag_list and isinstance(input_tag_list, list) and (image_index=='random' or isinstance(image_index, int) or isinstance(image_index, type(None))):
-            options = Options()
-            if headless:
-                options.headless = True
+        if title and input_tag_list and isinstance(input_tag_list, list) and (image_index=='random' or isinstance(image_index, int) or isinstance(image_index, type(None))) and (file_name is not None or text is not None):
+            pass
+        else:
+            return 'Required data is missing.'
 
-            driver = webdriver.Firefox(options=options)
-            driver.get('https://note.com/login?redirectPath=%2Fnotes%2Fnew')
+        options = Options()
+        if headless:
+            # selenium>=4.8.0
+            options.add_argument("--headless=new")
 
-            wait = WebDriverWait(driver, 10)
+        driver = webdriver.Firefox(options=options)
+        driver.get('https://note.com/login?redirectPath=%2Fnotes%2Fnew')
 
-            sleep(5)
-            email = wait.until(EC.presence_of_element_located((By.ID, 'email')))
-            email.send_keys(self.email)
-            sleep(0.5)
-            password = wait.until(EC.presence_of_element_located((By.ID, 'password')))
-            password.send_keys(self.password)
-            sleep(0.5)
-            button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".o-login__button button")))
-            button.click()
-            sleep(0.5)
+        wait = WebDriverWait(driver, 10)
 
-            sleep(2)
-            textarea = wait.until(EC.presence_of_element_located((By.TAG_NAME, "textarea")))
-            textarea.click()
-            textarea.send_keys(title)
-            textarea.send_keys(Keys.ENTER)
+        sleep(5)
+        email = wait.until(EC.presence_of_element_located((By.ID, 'email')))
+        email.send_keys(self.email)
+        sleep(0.5)
+        password = wait.until(EC.presence_of_element_located((By.ID, 'password')))
+        password.send_keys(self.password)
+        sleep(0.5)
+        button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".o-login__button button")))
+        button.click()
+        sleep(0.5)
 
+        sleep(2)
+        textarea = wait.until(EC.presence_of_element_located((By.TAG_NAME, "textarea")))
+        textarea.click()
+        textarea.send_keys(title)
+        textarea.send_keys(Keys.ENTER)
 
+        if text is None:
             with open(file=file_name, mode='r', encoding='utf-8')as f:
                 text = f.read()
 
-            edit_text = text.split('\n')
+        edit_text = text.split('\n')
 
-            pattern = re.compile(r'^\d+\. ')
-            horizontal = re.compile(r'^(\s?[-_*]){3,}(\s?)*$')
-            for i, text in enumerate(edit_text):
+        url = re.compile(r'https?://')
+        pattern = re.compile(r'^\d+\. ')
+        for i, text in enumerate(edit_text):
 
-                if text.startswith('### '):
+            if text.startswith('### '):
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys("###")
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.SPACE)
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(text.replace('### ',''))
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.ENTER) 
+
+            elif text.startswith('## '):
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys("##")
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.SPACE)
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(text.replace('## ',''))
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.ENTER) 
+
+            elif text.startswith('- '):
+                if edit_text[i-1].startswith('- '):
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys("###")
+                    active_element.send_keys(text.replace('- ',''))
+                else:
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys("-")
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
                     active_element.send_keys(Keys.SPACE)
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(text.replace('### ',''))
+                    active_element.send_keys(text.replace('- ',''))
+                try:
+                    if edit_text[i+1].startswith('- '):
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                    else:
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                except:
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER) 
+                    active_element.send_keys(Keys.ENTER)
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(Keys.ENTER)
 
-                elif text.startswith('## '):
+            elif pattern.search(text):
+                number = text[0]
+                if pattern.search(edit_text[i-1]):
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys("##")
+                    active_element.send_keys(text.replace(f'{number}. ',''))
+                else:
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(f'{number}.')
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
                     active_element.send_keys(Keys.SPACE)
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(text.replace('## ',''))
+                    active_element.send_keys(text.replace(f'{number}. ',''))
+                try:
+                    if pattern.search(edit_text[i+1]):
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                    else:
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                except:
                     sleep(0.5)
                     active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER) 
+                    active_element.send_keys(Keys.ENTER)
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(Keys.ENTER)
 
-                elif text.startswith('- '):
-                    if edit_text[i-1].startswith('- '):
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(text.replace('- ',''))
-                    else:
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys("-")
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.SPACE)
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(text.replace('- ',''))
-                    try:
-                        if edit_text[i+1].startswith('- '):
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                        else:
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                    except:
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
+            elif text == "---":
+                # note does not support "___" and "***"
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.ENTER)
+                sleep(0.5)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys('---')
 
-                elif pattern.search(text):
-                    number = text[0]
-                    if pattern.search(edit_text[i-1]):
+            elif text == '':
+                try:
+                    if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]) or text == '':
                         sleep(0.5)
                         active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(text.replace(f'{number}. ',''))
+                        active_element.send_keys(Keys.ENTER)
                     else:
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(f'{number}.')
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.SPACE)
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(text.replace(f'{number}. ',''))
-                    try:
-                        if pattern.search(edit_text[i+1]):
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                        else:
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                    except:
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
+                        continue
+                except:
+                    continue
+
+            elif url.search(text):
+                for i in range(len(text)):
+                    sleep(0.1)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(text[i])
+                sleep(0.1)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.ENTER)
                 
-                elif horizontal.search(text):
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER)
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys('---')
+                try:
+                    if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]):
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                except:
+                    continue
+                
+            else:
+                sleep(0.1)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(text)
+                sleep(0.1)
+                active_element = driver.execute_script("return document.activeElement;")
+                active_element.send_keys(Keys.ENTER)
 
-                elif text == '':
-                    try:
-                        if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]) or text == '':
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                        else:
-                            continue
-                    except:
-                        continue
-                        
-                else:
-                    sleep(0.1)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(text)
-                    sleep(0.1)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER)
+                try:
+                    if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]):
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                except:
+                    continue
 
-                    try:
-                        if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]):
-                            sleep(0.5)
-                            active_element = driver.execute_script("return document.activeElement;")
-                            active_element.send_keys(Keys.ENTER)
-                    except:
-                        continue
+        sleep(0.5)
+        driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+        driver.execute_script('window.scrollTo(0, 0)')
+        sleep(1)
 
-            sleep(0.5)
-            driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-            driver.execute_script('window.scrollTo(0, 0)')
-            sleep(1)
+        t = Tokenizer()
+        keywords = [token.surface for token in t.tokenize(title) if token.part_of_speech.startswith('名詞,一般') or token.part_of_speech.startswith('名詞,固有名詞') or token.part_of_speech.startswith('名詞,サ変接続')]
+        search_word = builtins.max(keywords, key=len) if keywords else None
 
-            t = Tokenizer()
-            keywords = [token.surface for token in t.tokenize(title) if token.part_of_speech.startswith('名詞,一般') or token.part_of_speech.startswith('名詞,固有名詞') or token.part_of_speech.startswith('名詞,サ変接続')]
-            search_word = builtins.max(keywords, key=len) if keywords else None
-
-            sleep(0.5)
-            button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/main/div[1]/button")))
+        sleep(0.5)
+        button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/main/div[1]/button")))
+        button.click()
+        sleep(0.5)
+        button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/main/div[1]/div/div[2]/button")))
+        button.click()
+        sleep(1)
+        button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[1]/div/div[2]/button")))
+        button.click()
+        sleep(0.5)
+        keyword = driver.execute_script("return document.activeElement;")
+        keyword.send_keys(search_word)
+        sleep(2)
+        button = driver.find_element(By.XPATH, "/html/body/div[5]/div/div/div[1]/div/div[2]/button")
+        button.click()
+        sleep(3)
+        parent_element = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]")))
+        img_elements = parent_element.find_elements(By.TAG_NAME, 'img')
+        if isinstance(image_index, int) and 0 <= int(image_index)<= int(len(img_elements)-1):
+            index = image_index
+        else:
+            max = len(img_elements)-1
+            if max >= 0:
+                index = randint(0,max)
+            else:
+                index = -1
+        if index < 0 or isinstance(image_index, type(None)):
+            keyword.send_keys(Keys.ESCAPE)
+        else:
+            img_elements[index].click()
+            button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]/div/div[2]/div/div[5]/button[2]")))
             button.click()
-            sleep(0.5)
-            button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/main/div[1]/div/div[2]/button")))
-            button.click()
-            sleep(1)
-            button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[1]/div/div[2]/button")))
-            button.click()
-            sleep(0.5)
-            keyword = driver.execute_script("return document.activeElement;")
-            keyword.send_keys(search_word)
             sleep(2)
-            button = driver.find_element(By.XPATH, "/html/body/div[5]/div/div/div[1]/div/div[2]/button")
+            button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div/div/div[3]/button[2]")))
             button.click()
-            sleep(3)
-            parent_element = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]")))
-            img_elements = parent_element.find_elements(By.TAG_NAME, 'img')
-            if isinstance(image_index, int) and 0 <= int(image_index)<= int(len(img_elements)-1):
-                index = image_index
-            else:
-                max = len(img_elements)-1
-                if max >= 0:
-                    index = randint(0,max)
-                else:
-                    index = -1
-            if index < 0 or isinstance(image_index, type(None)):
-                keyword.send_keys(Keys.ESCAPE)
-            else:
-                img_elements[index].click()
-                button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]/div/div[2]/div/div[5]/button[2]")))
-                button.click()
-                sleep(2)
-                button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div/div/div[3]/button[2]")))
-                button.click()
-                sleep(10)
+            sleep(10)
 
-            if post_setting:
-                button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[2]")))
-                button.click()
+        if post_setting:
+            button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[2]")))
+            button.click()
 
-                sleep(2)
-                url = driver.current_url
-                cut_url = url.split('/')
-                post_id = cut_url[4]
-                post_url = f'https://note.com/{self.user_id}/n/{post_id}'
+            sleep(2)
+            url = driver.current_url
+            cut_url = url.split('/')
+            post_id = cut_url[4]
+            post_url = f'https://note.com/{self.user_id}/n/{post_id}'
 
-                sleep(1)
-                input_element = wait.until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[3]/div[1]/div[2]/main/section[1]/div[2]/div/div[1]/input')))
-                input_element.click()
+            sleep(1)
+            input_element = wait.until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[3]/div[1]/div[2]/main/section[1]/div[2]/div/div[1]/input')))
+            input_element.click()
+            sleep(0.5)
+            input = driver.execute_script("return document.activeElement;")
+            for tag in input_tag_list:
+                sleep(0.5)
+                input.send_keys(tag)
                 sleep(0.5)
                 input = driver.execute_script("return document.activeElement;")
-                for tag in input_tag_list:
-                    sleep(0.5)
-                    input.send_keys(tag)
-                    sleep(0.5)
-                    input = driver.execute_script("return document.activeElement;")
-                    input.send_keys(Keys.SPACE)
+                input.send_keys(Keys.SPACE)
 
-                button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[1]/div/button")))
-                button.click()
-
-                driver.quit()
-                res = {
-                    'run':'success',
-                    'title':title,
-                    'file_path':file_name,
-                    'tag_list':input_tag_list,
-                    'post_setting':'Public',
-                    'post_url':post_url
-                }
-
-                return res
-
-            else:
-                button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[1]")))
-                button.click()
-
-                driver.quit()
-                res = {
-                    'run':'success',
-                    'title':title,
-                    'file_path':file_name,
-                    'tag_list':input_tag_list,
-                    'post_setting':'Draft',
-                }
-
-                return res
-            
+            button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[1]/div/button")))
+            button.click()
+            res = {
+                'run':'success',
+                'title':title,
+                'file_path':file_name,
+                'tag_list':input_tag_list,
+                'post_setting':'Public',
+                'post_url':post_url
+            }
         else:
-            return 'Required data is missing.'
+            button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[1]")))
+            button.click()
+            res = {
+                'run':'success',
+                'title':title,
+                'file_path':file_name,
+                'tag_list':input_tag_list,
+                'post_setting':'Draft',
+            }
+        driver.quit()
+        return res
+            
