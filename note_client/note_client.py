@@ -28,11 +28,12 @@ class Note:
         Create new article
         -----
         > title : article title
-        > file_name : article content file
+        > file_name : article content file ( default : None )
         > tag_list : tag of article
         > image_index : index number of the article image
         > post_setting : save draft or post (default : save draft)
         > headless : show or not show page (default : not show)
+        > text : archicle content text (default : None)
         '''
 
         if title and input_tag_list and isinstance(input_tag_list, list) and (image_index=='random' or isinstance(image_index, int) or isinstance(image_index, type(None))) and (file_name is not None or text is not None):
@@ -75,6 +76,9 @@ class Note:
 
         url = re.compile(r'https?://')
         pattern = re.compile(r'^\d+\. ')
+        minusgt = re.compile(r'^[\->] ')
+        blockquote = False
+        
         for i, text in enumerate(edit_text):
 
             if text.startswith('### '):
@@ -105,40 +109,40 @@ class Note:
                 active_element = driver.execute_script("return document.activeElement;")
                 active_element.send_keys(Keys.ENTER) 
 
-            elif text.startswith('- '):
-                if edit_text[i-1].startswith('- '):
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(text.replace('- ',''))
-                else:
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys("-")
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.SPACE)
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(text.replace('- ',''))
-                try:
-                    if edit_text[i+1].startswith('- '):
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
-                    else:
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
-                        sleep(0.5)
-                        active_element = driver.execute_script("return document.activeElement;")
-                        active_element.send_keys(Keys.ENTER)
-                except:
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER)
-                    sleep(0.5)
-                    active_element = driver.execute_script("return document.activeElement;")
-                    active_element.send_keys(Keys.ENTER)
+            #elif text.startswith('- '):
+            #    if edit_text[i-1].startswith('- '):
+            #        sleep(0.5)
+            #        active_element = driver.execute_script("return document.activeElement;")
+            #        active_element.send_keys(text.replace('- ',''))
+            #    else:
+            #        sleep(0.5)
+            #        active_element = driver.execute_script("return document.activeElement;")
+            #        active_element.send_keys("-")
+            #        sleep(0.5)
+            #        active_element = driver.execute_script("return document.activeElement;")
+            #        active_element.send_keys(Keys.SPACE)
+            #        sleep(0.5)
+            #        active_element = driver.execute_script("return document.activeElement;")
+            #        active_element.send_keys(text.replace('- ',''))
+            #    try:
+            #        if edit_text[i+1].startswith('- '):
+            #            sleep(0.5)
+            #            active_element = driver.execute_script("return document.activeElement;")
+            #            active_element.send_keys(Keys.ENTER)
+            #        else:
+            #            sleep(0.5)
+            #            active_element = driver.execute_script("return document.activeElement;")
+            #            active_element.send_keys(Keys.ENTER)
+            #            sleep(0.5)
+            #            active_element = driver.execute_script("return document.activeElement;")
+            #            active_element.send_keys(Keys.ENTER)
+            #    except:
+            #        sleep(0.5)
+            #        active_element = driver.execute_script("return document.activeElement;")
+            #        active_element.send_keys(Keys.ENTER)
+            #        sleep(0.5)
+            #        active_element = driver.execute_script("return document.activeElement;")
+            #        active_element.send_keys(Keys.ENTER)
 
             elif pattern.search(text):
                 number = text[0]
@@ -186,8 +190,12 @@ class Note:
                 active_element.send_keys('---')
 
             elif text == '':
+                if blockquote:
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(' ')
                 try:
-                    if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]) or text == '':
+                    if edit_text[i+1].startswith('## ') or minusgt.search(edit_text[i+1]) or pattern.search(edit_text[i+1]) or text == '':
                         sleep(0.5)
                         active_element = driver.execute_script("return document.activeElement;")
                         active_element.send_keys(Keys.ENTER)
@@ -206,13 +214,65 @@ class Note:
                 active_element.send_keys(Keys.ENTER)
                 
                 try:
-                    if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]):
+                    if edit_text[i+1].startswith('## ') or minusgt.search(edit_text[i+1]) or pattern.search(edit_text[i+1]):
                         sleep(0.5)
                         active_element = driver.execute_script("return document.activeElement;")
                         active_element.send_keys(Keys.ENTER)
                 except:
                     continue
                 
+            elif text == "```":
+                # block quote
+                if blockquote:
+                    # exit
+                    blockquote = False
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(Keys.ENTER)
+                else:
+                    # enter
+                    blockquote = True
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys('```')
+                
+            elif minusgt.search(text):
+                mark = text[0]
+                markspace = f"{mark} "
+                if edit_text[i-1].startswith(markspace):
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(text.replace(mark,''))
+                else:
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(mark)
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(Keys.SPACE)
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(text.replace(mark,''))
+                try:
+                    if edit_text[i+1].startswith(markspace):
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                    else:
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                        sleep(0.5)
+                        active_element = driver.execute_script("return document.activeElement;")
+                        active_element.send_keys(Keys.ENTER)
+                except:
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(Keys.ENTER)
+                    sleep(0.5)
+                    active_element = driver.execute_script("return document.activeElement;")
+                    active_element.send_keys(Keys.ENTER)
+
             else:
                 sleep(0.1)
                 active_element = driver.execute_script("return document.activeElement;")
@@ -222,7 +282,7 @@ class Note:
                 active_element.send_keys(Keys.ENTER)
 
                 try:
-                    if edit_text[i+1].startswith('## ') or edit_text[i+1].startswith('- ') or pattern.search(edit_text[i+1]):
+                    if edit_text[i+1].startswith('## ') or minusgt.search(edit_text[i+1]) or pattern.search(edit_text[i+1]):
                         sleep(0.5)
                         active_element = driver.execute_script("return document.activeElement;")
                         active_element.send_keys(Keys.ENTER)

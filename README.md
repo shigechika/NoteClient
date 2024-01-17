@@ -85,12 +85,29 @@ You can also write paragraph numbers like this.
 By using horizontal lines
 ---
 You can separate the content of the text like this.
- - * _ - * _
-You can allow some horizontal pattern with " - * _ - * _ ".
+
+## How to Use Quote
+
+- Quote
+> First Quote
+> Second Quote
+> Third Quote
+
+- Block Quote
+```
+#include <stdio.h>
+
+main( )
+{
+  printf("hello, world\n");
+}
+```
 
 ## How to Use Table
-- Table can make with $${\KaTeX}$$ array
-Headline of en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population
+note's markdown does not support table.
+so, creating table with $${\KaTeX}$$ array
+
+Headline of https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population 
 
 $$
 \begin{array}{c:l:r}
@@ -109,6 +126,8 @@ $$
 $$
 ```
 
+### Sample
+![Sample](sample.png)
 
 ## Help
 
