@@ -23,7 +23,7 @@ class Note:
     def __str__(self):
         return f"Email : {self.email} / User ID : {self.user_id}"
 
-    def create_article(self, title:str, input_tag_list:list, image_index='random', post_setting:bool=False, file_name:str=None, headless:bool=True, text:str=None):
+    def create_article(self, title:str, input_tag_list:list, image_index='random', post_setting:bool=False, file_name:str=None, headless:bool=True, text:str=None, search_word:str=None):
         '''
         Create new article
         -----
@@ -294,9 +294,10 @@ class Note:
         driver.execute_script('window.scrollTo(0, 0)')
         sleep(1)
 
-        t = Tokenizer()
-        keywords = [token.surface for token in t.tokenize(title) if token.part_of_speech.startswith('名詞,一般') or token.part_of_speech.startswith('名詞,固有名詞') or token.part_of_speech.startswith('名詞,サ変接続')]
-        search_word = builtins.max(keywords, key=len) if keywords else None
+        if search_word is None:
+            t = Tokenizer()
+            keywords = [token.surface for token in t.tokenize(title) if token.part_of_speech.startswith('名詞,一般') or token.part_of_speech.startswith('名詞,固有名詞') or token.part_of_speech.startswith('名詞,サ変接続')]
+            search_word = builtins.max(keywords, key=len) if keywords else None
 
         sleep(0.5)
         button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/main/div[1]/button")))
@@ -330,7 +331,7 @@ class Note:
             img_elements[index].click()
             button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]/div/div[2]/div/div[5]/button[2]")))
             button.click()
-            sleep(2)
+            sleep(10)
             button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div/div/div[3]/button[2]")))
             button.click()
             sleep(10)
