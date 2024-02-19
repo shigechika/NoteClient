@@ -43,8 +43,7 @@ class Note:
 
         options = Options()
         if headless:
-            # selenium>=4.8.0
-            options.add_argument("--headless=new")
+            options.add_argument("--headless")
 
         driver = webdriver.Firefox(options=options)
         driver.get('https://note.com/login?redirectPath=%2Fnotes%2Fnew')
