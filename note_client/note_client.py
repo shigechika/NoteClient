@@ -23,7 +23,7 @@ class Note:
     def __str__(self):
         return f"Email : {self.email} / User ID : {self.user_id}"
 
-    def create_article(self, title:str, input_tag_list:list, image_index='random', post_setting:bool=False, file_name:str=None, headless:bool=True, text:str=None, search_word:str=None):
+    def create_article(self, title:str, input_tag_list:list, image_index='random', post_setting:bool=False, file_name:str=None, headless:bool=True, text:str=None, search_word:str=None, sleep_factor:int=1):
         '''
         Create new article
         -----
@@ -48,20 +48,20 @@ class Note:
         driver = webdriver.Firefox(options=options)
         driver.get('https://note.com/login?redirectPath=%2Fnotes%2Fnew')
 
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 10 * sleep_factor)
 
-        sleep(5)
+        sleep(5 * sleep_factor)
         email = wait.until(EC.presence_of_element_located((By.ID, 'email')))
         email.send_keys(self.email)
-        sleep(0.5)
+        sleep(0.5 * sleep_factor)
         password = wait.until(EC.presence_of_element_located((By.ID, 'password')))
         password.send_keys(self.password)
-        sleep(0.5)
+        sleep(0.5 * sleep_factor)
         button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".o-login__button button")))
         button.click()
-        sleep(0.5)
+        sleep(0.5 * sleep_factor)
 
-        sleep(2)
+        sleep(2 * sleep_factor)
         textarea = wait.until(EC.presence_of_element_located((By.TAG_NAME, "textarea")))
         textarea.click()
         textarea.send_keys(title)
@@ -253,10 +253,10 @@ class Note:
                 except:
                     continue
 
-        sleep(0.5)
+        sleep(0.5 * sleep_factor)
         driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
         driver.execute_script('window.scrollTo(0, 0)')
-        sleep(2.0)
+        sleep(2.0 * sleep_factor)
 
         if search_word is None:
             t = Tokenizer()
@@ -275,10 +275,10 @@ class Note:
         sleep(0.5)
         keyword = driver.execute_script("return document.activeElement;")
         keyword.send_keys(search_word)
-        sleep(2)
+        sleep(2 * sleep_factor)
         button = driver.find_element(By.XPATH, "/html/body/div[5]/div/div/div[1]/div/div[2]/button")
         button.click()
-        sleep(3)
+        sleep(3 * sleep_factor)
         parent_element = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]")))
         img_elements = parent_element.find_elements(By.TAG_NAME, 'img')
         if isinstance(image_index, int) and 0 <= int(image_index)<= int(len(img_elements)-1):
@@ -293,33 +293,33 @@ class Note:
             keyword.send_keys(Keys.ESCAPE)
         else:
             img_elements[index].click()
-            sleep(5)
+            sleep(5 * sleep_factor)
             button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[5]/div/div/div[2]/div/div[2]/div/div[5]/button[2]")))
             button.click()
-            sleep(5)
+            sleep(5 * sleep_factor)
             button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div/div/div[3]/button[2]")))
             button.click()
-            sleep(10)
+            sleep(10 * sleep_factor)
 
         if post_setting:
             button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[3]/div[1]/div[2]/div[1]/header/div/div[2]/div/button[2]")))
             button.click()
 
-            sleep(2)
+            sleep(2 * sleep_factor)
             url = driver.current_url
             cut_url = url.split('/')
             post_id = cut_url[4]
             post_url = f'https://note.com/{self.user_id}/n/{post_id}'
 
-            sleep(2.0)
+            sleep(2.0 * sleep_factor)
             input_element = wait.until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[3]/div[1]/div[2]/main/section[1]/div[2]/div/div[1]/input')))
             input_element.click()
-            sleep(0.5)
+            sleep(0.5 * sleep_factor)
             input = driver.execute_script("return document.activeElement;")
             for tag in input_tag_list:
-                sleep(0.5)
+                sleep(0.5 * sleep_factor)
                 input.send_keys(tag)
-                sleep(0.5)
+                sleep(0.5 * sleep_factor)
                 input = driver.execute_script("return document.activeElement;")
                 input.send_keys(Keys.SPACE)
 
@@ -343,6 +343,7 @@ class Note:
                 'tag_list':input_tag_list,
                 'post_setting':'Draft',
             }
+        sleep(5 * sleep_factor)
         driver.quit()
         return res
             
